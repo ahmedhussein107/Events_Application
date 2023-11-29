@@ -1,4 +1,6 @@
 import express from 'express';
+import mongoose from 'mongoose';
+import EventModel from './EventsModel.js';
 
 // creating express application instance
 const serverUsingExpress = express();
