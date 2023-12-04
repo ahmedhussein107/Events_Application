@@ -1,10 +1,11 @@
-import { ObjectId } from "mongodb";
+import {ObjectId } from "mongodb";
 import mongoose from "mongoose";
 
 const TicketSchema = mongoose.Schema(                                
     {
         price: {
-            type: Number
+            type: Number,
+            required: true
         },
 
         eventID: {
@@ -13,7 +14,7 @@ const TicketSchema = mongoose.Schema(
         },
 
         userID: {
-            type: int
+            type: ObjectId
         }
     }
 );
