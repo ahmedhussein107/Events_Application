@@ -4,48 +4,44 @@ import dotenv from "dotenv";
 import EventModel from "./model/EventModel.js";
 import TicketModel from "./model/TicketModel.js";
 import AttendeeModel from "./model/AttendeeModel.js";
+import EventRoute from "./route/EventRoute.js";
+
+const PORT_NUMBER = 3000;
 
 dotenv.config();
 
-const connect = async () => {
+const connectToDataBase = async () => {
   await mongoose.connect(process.env.MONGO_URL).then(() => {
     console.log("Connected to the srver");
   });
 };
 
-const PORT_NUMBER = 3000;
+await connectToDataBase();
 
-await connect();
+const server = express();
 
-// creating express application instance
-const serverUsingExpress = express();
+server.use(express.json());
+server.use("/events", EventRoute);
 
-serverUsingExpress.use(express.json());
-
-serverUsingExpress.listen(PORT_NUMBER, () => {
+server.listen(PORT_NUMBER, () => {
   console.log("Server started at port " + PORT_NUMBER);
 });
 
-// // arrow function : lambda expression like functions supported in ES6
-serverUsingExpress.get("/home", (req, res) => {
+server.get("/home", (req, res) => {
   res.status(200).json({ message: "Welcome to our home page" });
 });
 
-serverUsingExpress.get("/events", (req, res) => {
-  res.status(200).send(listOfStrings.join("\n"));
-});
-
-serverUsingExpress.get("/attendees", async (req, res) => {
+server.get("/attendees", async (req, res) => {
   const attendees = await AttendeeModel.find();
   res.status(200).json(attendees);
 });
 
-serverUsingExpress.get("/tickets", async (req, res) => {
+server.get("/tickets", async (req, res) => {
   const tickets = await TicketModel.find();
   res.status(200).json(tickets);
 });
 
-serverUsingExpress.get("/tickets/:id", async (req, res) => {
+server.get("/tickets/:id", async (req, res) => {
   try {
     const id = req.params.id;
     const ticket = await TicketModel.findById(id);
@@ -55,7 +51,7 @@ serverUsingExpress.get("/tickets/:id", async (req, res) => {
   }
 });
 
-serverUsingExpress.get("/attendees/:id", async (req, res) => {
+server.get("/attendees/:id", async (req, res) => {
   try {
     const id = req.params.id;
     const attendee = await AttendeeModel.findById(id);
@@ -65,28 +61,7 @@ serverUsingExpress.get("/attendees/:id", async (req, res) => {
   }
 });
 
-serverUsingExpress.get("/events/:id", (req, res) => {
-  try {
-    const id = req.params.id;
-    const event = EventModel.find(id);
-    res.status(200).json(event);
-  } catch (error) {
-    res.status(404).json({ message: error.message });
-  }
-});
-
-serverUsingExpress.post("/events", async (req, res) => {
-  try {
-    const { event } = req.body;
-    const newEvent = new EventModel(event);
-    await newEvent.save();
-    res.status(200).json(newEvent);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-serverUsingExpress.post("/tickets", async (req, res) => {
+server.post("/tickets", async (req, res) => {
   try {
     const { ticket } = req.body;
     const newTicket = new TicketModel(ticket);
@@ -97,7 +72,7 @@ serverUsingExpress.post("/tickets", async (req, res) => {
   }
 });
 
-serverUsingExpress.post("/attendees", async (req, res) => {
+server.post("/attendees", async (req, res) => {
   try {
     const { attendee } = req.body;
     const newAtendee = new AttendeeModel(attendee);
@@ -108,13 +83,13 @@ serverUsingExpress.post("/attendees", async (req, res) => {
   }
 });
 
-serverUsingExpress.delete("/attendees/:id", async (req, res) => {
+server.delete("/attendees/:id", async (req, res) => {
   const id = req.params.id;
   const attendee = await AttendeeModel.findByIdAndDelete(id);
   res.status(200).json(attendee);
 });
 
-serverUsingExpress.patch("/tickets/:id", async (req, res) => {
+server.patch("/tickets/:id", async (req, res) => {
   const id = req.params.id;
   const ticket = await TicketModel.findById(id);
   const { userID } = req.body;
